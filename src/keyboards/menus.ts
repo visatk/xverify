@@ -16,10 +16,25 @@ export const getShopMenu = () => {
 		.text("🇬 [18 Months] Google AI PRO — Activation Link", "prod_g_ai").row()
 		.text("🤖 ChatGPT PLUS [1 Month, UPI Made] — No wa", "prod_gpt_nowa").row()
 		.text("🤖 ChatGPT PLUS [1 Month, UPI Made] — 3 Days", "prod_gpt_3d").row()
+		.text("🤖 ChatGPT PLUS [1 Month, UPI Made] — Full W", "prod_gpt_full").row()
+		.text("⏸️ ElevenLabs Creator 1 Month PromoCode", "prod_eleven").row()
 		.text("⬅️ Back", "back_main");
 };
 
-// Dynamic Quantity Builder
+export const getBuyCreditsMenu = () => {
+    return new InlineKeyboard()
+        .text("1 Credit — $1", "buy_cred:1").row()
+        .text("10 Credits (🎉 1 Bonus) — $10", "buy_cred:10").row()
+        .text("50 Credits (🎉 6 Bonus) — $50", "buy_cred:50").row()
+        .text("100 Credits (🎉 15 Bonus) — $100", "buy_cred:100").row()
+        .text("✏️ Custom Quantity", "custom_cred").row()
+        .text("— 🛒 Featured Products —", "noop").row()
+        .text("🇬 [18 Months] Google AI PRO — Activation Link", "prod_g_ai").row()
+		.text("🤖 ChatGPT PLUS [1 Month, UPI Made] — 3 Days", "prod_gpt_3d").row()
+        .text("⏸️ ElevenLabs Creator 1 Month PromoCode", "prod_eleven").row()
+        .text("❌ Cancel", "back_main");
+};
+
 export const getQuantityMenu = (productId: string) => {
 	return new InlineKeyboard()
 		.text("1", `qty:${productId}:1`)
@@ -35,7 +50,6 @@ export const getQuantityMenu = (productId: string) => {
 		.text("❌ Cancel", "back_main");
 };
 
-// Dynamic Payment Menu bounded to Order ID
 export const getPaymentMenu = (orderId: string, totalUsd: number, hasEnoughBalance: boolean) => {
 	const kb = new InlineKeyboard();
     if (hasEnoughBalance) {
@@ -43,19 +57,16 @@ export const getPaymentMenu = (orderId: string, totalUsd: number, hasEnoughBalan
     } else {
         kb.text(`🪙 Pay with Credits ($${totalUsd.toFixed(2)}) — Insufficient`, `noop`).row();
     }
-	
 	kb.text("🟡 Binance Pay (✅ Automatic)", `pay:${orderId}:binance`).row()
 	  .text("🔵 USDT (BEP-20) (✅ Automatic)", `pay:${orderId}:bep20`).row()
 	  .text("🔴 USDT (TRC-20) (✅ Automatic)", `pay:${orderId}:trc20`).row()
 	  .text("❌ Cancel", "back_main");
-	
 	return kb;
 };
 
-// Payment Actions
-export const getCryptoActionMenu = (orderId: string) => {
+export const getCryptoActionMenu = (orderId: string, isBinance: boolean = false) => {
     return new InlineKeyboard()
-        .text("📋 Copy Address", `copy_addr:${orderId}`)
+        .text(isBinance ? "📋 Copy Pay ID" : "📋 Copy Address", `copy_addr:${orderId}`)
         .text("📋 Copy Amount", `copy_amt:${orderId}`).row()
         .text("✅ I've Paid", `verify_pay:${orderId}`).row()
         .text("❌ Cancel", "back_main");
