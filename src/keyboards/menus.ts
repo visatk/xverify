@@ -19,18 +19,44 @@ export const getShopMenu = () => {
 		.text("⬅️ Back", "back_main");
 };
 
-export const getProductMenu = () => {
+// Dynamic Quantity Builder
+export const getQuantityMenu = (productId: string) => {
 	return new InlineKeyboard()
-		.text("1", "buy_1").text("2", "buy_2").text("3", "buy_3").text("5", "buy_5").row()
-		.text("✏️ Custom Quantity", "custom_qty").row()
-		.text("⬅️ Back to Shop", "shop").text("❌ Cancel", "back_main");
+		.text("1", `qty:${productId}:1`)
+		.text("2", `qty:${productId}:2`)
+		.text("3", `qty:${productId}:3`)
+		.text("5", `qty:${productId}:5`)
+		.text("10", `qty:${productId}:10`).row()
+		.text("15", `qty:${productId}:15`)
+		.text("18", `qty:${productId}:18`)
+		.text("20", `qty:${productId}:20`).row()
+		.text("✏️ Custom Quantity", `custom_qty:${productId}`).row()
+		.text("⬅️ Back to Shop", "shop")
+		.text("❌ Cancel", "back_main");
 };
 
-export const getPaymentMenu = () => {
-	return new InlineKeyboard()
-		.text("🪙 Pay with Credits ($2.90)", "pay_credits").row()
-		.text("🟡 Binance Pay (✅ Automatic)", "pay_binance").row()
-		.text("🔵 USDT (BEP-20) (✅ Automatic)", "pay_usdt_bep").row()
-		.text("🔴 USDT (TRC-20) (✅ Automatic)", "pay_usdt_trc").row()
-		.text("❌ Cancel", "back_main");
+// Dynamic Payment Menu bounded to Order ID
+export const getPaymentMenu = (orderId: string, totalUsd: number, hasEnoughBalance: boolean) => {
+	const kb = new InlineKeyboard();
+    if (hasEnoughBalance) {
+        kb.text(`🪙 Pay with Credits ($${totalUsd.toFixed(2)})`, `pay:${orderId}:credits`).row();
+    } else {
+        kb.text(`🪙 Pay with Credits ($${totalUsd.toFixed(2)}) — Insufficient`, `noop`).row();
+    }
+	
+	kb.text("🟡 Binance Pay (✅ Automatic)", `pay:${orderId}:binance`).row()
+	  .text("🔵 USDT (BEP-20) (✅ Automatic)", `pay:${orderId}:bep20`).row()
+	  .text("🔴 USDT (TRC-20) (✅ Automatic)", `pay:${orderId}:trc20`).row()
+	  .text("❌ Cancel", "back_main");
+	
+	return kb;
+};
+
+// Payment Actions
+export const getCryptoActionMenu = (orderId: string) => {
+    return new InlineKeyboard()
+        .text("📋 Copy Address", `copy_addr:${orderId}`)
+        .text("📋 Copy Amount", `copy_amt:${orderId}`).row()
+        .text("✅ I've Paid", `verify_pay:${orderId}`).row()
+        .text("❌ Cancel", "back_main");
 };
