@@ -5,17 +5,36 @@ import { getMainMenu, getShopMenu, getBuyCreditsMenu } from '../keyboards/menus'
 export const commands = new Composer<MyContext>();
 
 commands.command('start', async (ctx) => {
-    const payload = ctx.match; // captures e.g. "ref_12345"
-    let inviterId = null;
-    if (payload && payload.startsWith('ref_')) {
-        inviterId = parseInt(payload.replace('ref_', ''), 10);
+    const payload = ctx.match;
+    let inviterId: number | null = null;
+    
+    // Parse deep-link referral IDs securely
+    if (payload && typeof payload === 'string' && payload.startsWith('ref_')) {
+        const parsed = parseInt(payload.replace('ref_', ''), 10);
+        if (!isNaN(parsed) && parsed !== ctx.from?.id) {
+            inviterId = parsed;
+        }
     }
     
-	await ctx.env.DB.prepare(
-		"INSERT OR IGNORE INTO users (user_id, username) VALUES (?, ?)"
-	).bind(ctx.from?.id, ctx.from?.username || "").run();
+    const userId = ctx.from?.id;
+    const username = ctx.from?.username || "";
 
-    // In a future update, you could insert the `inviterId` into a referrals tracking table here.
+    if (userId) {
+        const existingUser = await ctx.env.DB.prepare("SELECT user_id FROM users WHERE user_id = ?").bind(userId).first();
+        
+        if (!existingUser) {
+            await ctx.env.DB.prepare(
+                "INSERT INTO users (user_id, username, inviter_id) VALUES (?, ?, ?)"
+            ).bind(userId, username, inviterId).run();
+
+            // Reward the inviter
+            if (inviterId) {
+                await ctx.env.DB.prepare(
+                    "UPDATE users SET referral_credits = referral_credits + 0.1 WHERE user_id = ?"
+                ).bind(inviterId).run();
+            }
+        }
+    }
 
 	const welcomeText = `👋 Welcome to **PixVerifyBot**!\n\nThis bot helps you verify your Google Pixel device in your Google Account, allowing you to claim a free 1-year Google AI.\n\nBefore verification please make sure that you follow the following steps.\n1. Close Your Payments Profile\n2. Leave or delete current family group.\n3. Do not use the gmail id in which you have claimed student offer before.\n4. Prepare TOTL Secret(Authenticator Secret)\n\nUse 💡 if you cannot find TOTP secret key or contact @PixVerify`;
 	
